@@ -1,4 +1,5 @@
-import type { Priority, Task } from '../types/task'
+import type { Tag } from '../types/productivity'
+import type { Task } from '../types/task'
 import { CheckIcon } from './Icons'
 import { TaskItem } from './TaskItem'
 
@@ -6,17 +7,19 @@ interface TaskSectionProps {
   title: string
   count: number
   tasks: Task[]
+  tags: Tag[]
   emptyMessage: string
   completed?: boolean
   onToggle: (id: string) => void
   onDelete: (id: string) => void
-  onEdit: (id: string, title: string, priority: Priority) => void
+  onEdit: (task: Task) => void
 }
 
 export function TaskSection({
   title,
   count,
   tasks,
+  tags,
   emptyMessage,
   completed = false,
   onToggle,
@@ -43,6 +46,7 @@ export function TaskSection({
             <TaskItem
               key={task.id}
               task={task}
+              tags={tags}
               onToggle={onToggle}
               onDelete={onDelete}
               onEdit={onEdit}

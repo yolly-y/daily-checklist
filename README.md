@@ -1,62 +1,93 @@
-# Daily Checklist
+# Daily — Personal Productivity OS
 
-A clean, responsive personal checklist for managing everyday tasks. Tasks are stored locally in the browser, so the app stays private and remembers your list after a refresh.
+Daily is a responsive, browser-private productivity dashboard built with React and TypeScript. It combines daily tasks, an Eisenhower Matrix, calendar planning, long-term goals, productivity history, and custom tags in one application.
 
 ## Features
 
-- Add, edit, delete, and complete tasks
-- Separate active and completed task sections
-- High, medium, and low priority labels
-- Live completion count and progress bar
-- Current date in the header
-- Persistent browser storage
-- Responsive desktop and mobile layout
-- Keyboard-friendly forms and accessible controls
+### Dashboard
 
-## Tech stack
+- Today's tasks plus overdue work
+- Quick task capture and a detailed task editor
+- Complete, edit, and delete tasks
+- Live completion progress
+- Filter today's work by custom tags
 
-- **React 18** for the component UI and application state
-- **TypeScript** for type-safe task data and component contracts
-- **Tailwind CSS** for responsive styling and the visual system
-- **Vite** for development and production builds
-- **localStorage** for zero-setup browser persistence
+### Task model
+
+Every task supports a title, description, status, importance, urgency, priority, multiple tags, creation date, due date, completion date, task type, and an optional linked goal.
+
+### Eisenhower Matrix
+
+- Q1: important and urgent
+- Q2: important and not urgent
+- Q3: not important and urgent
+- Q4: not important and not urgent
+- Drag tasks between quadrants to update importance and urgency
+
+### Calendar
+
+- FullCalendar month and week views
+- Tasks appear on their due dates
+- Click a date to inspect or create tasks
+- Click an event to edit the task
+- Drag events to change due dates
+
+### Goals
+
+- Create long-term goals with descriptions and deadlines
+- Pause, activate, complete, or delete goals
+- Link tasks to goals as actionable milestones
+- Automatic task count and completion percentage
+
+### Productivity history
+
+- Automatic daily snapshots of completed and unfinished tasks
+- Completion rate and productivity score
+- Select previous dates to review activity
+- Seven-day summary
+- Repeatedly postponed task detection
+
+### Tags
+
+- Create, edit, and delete color-coded tags
+- Assign multiple tags to each task
+- Filter Dashboard tasks by tag
+
+## Technology
+
+- React 18
+- TypeScript
+- Vite
+- Tailwind CSS
+- FullCalendar React 6
+- Browser localStorage
+
+FullCalendar is used through its official React, DayGrid, TimeGrid, and Interaction packages. No calendar implementation is maintained inside this project.
 
 ## Project structure
 
 ```text
-daily-checklist/
-├── src/
-│   ├── components/
-│   │   ├── Header.tsx
-│   │   ├── Icons.tsx
-│   │   ├── ProgressCard.tsx
-│   │   ├── TaskForm.tsx
-│   │   ├── TaskItem.tsx
-│   │   └── TaskSection.tsx
-│   ├── hooks/
-│   │   └── useLocalStorage.ts
-│   ├── types/
-│   │   └── task.ts
-│   ├── App.tsx
-│   ├── index.css
-│   └── main.tsx
-├── index.html
-├── package.json
-├── tailwind.config.js
-├── tsconfig.json
-└── vite.config.ts
+src/
+├── components/          Shared navigation, task, progress, and form UI
+├── hooks/               Productivity state coordination
+├── pages/               Dashboard, Matrix, Calendar, Goals, History, Settings
+├── services/            Storage migration and history snapshot logic
+├── types/               Task and productivity data contracts
+├── utils/               Local date helpers
+├── App.tsx              Application shell and cross-page actions
+└── main.tsx             React entry point
 ```
 
 ## Run locally
 
-You need Node.js 18 or newer.
+Node.js 18 or newer is required.
 
 ```bash
 npm install
 npm run dev
 ```
 
-Vite will print the local URL, usually `http://localhost:5173`.
+Vite prints a local URL, normally `http://localhost:5173`.
 
 ## Quality checks
 
@@ -65,18 +96,34 @@ npm run lint
 npm run build
 ```
 
-To preview the production build:
+Preview the production build with:
 
 ```bash
 npm run preview
 ```
 
-## Publish with GitHub Pages
+## Data storage and migration
 
-This repository includes an automatic GitHub Pages workflow. After pushing the
-project to the `main` branch, open **Settings → Pages** in GitHub and set
-**Source** to **GitHub Actions**. The workflow will build and publish the site.
+Data is separated into four browser storage collections:
 
-## Data persistence
+- `daily-checklist-tasks`
+- `daily-checklist-goals`
+- `daily-checklist-tags`
+- `daily-checklist-history`
 
-Tasks are serialized to the `daily-checklist-tasks-v1` key in browser `localStorage`. Clearing site data for the app's origin will remove the saved tasks. No data is sent to a server.
+Tasks from the original `daily-checklist-tasks-v1` collection are migrated automatically the first time the upgraded app opens. Data stays in the current browser and is not uploaded to GitHub or any server.
+
+The storage implementation is isolated in `src/services/storage.ts`, so a future database adapter can replace localStorage without rebuilding the page components.
+
+## GitHub Pages
+
+The repository includes `.github/workflows/deploy.yml`. Every push to `main` installs dependencies, builds the app, and deploys `dist` to GitHub Pages.
+
+## Future improvements
+
+- Optional accounts and encrypted cloud synchronization
+- Recurring task rules and reminders
+- Explicit milestone entities under goals
+- History export and richer analytics charts
+- Keyboard shortcuts and command palette
+- Automated component and end-to-end tests

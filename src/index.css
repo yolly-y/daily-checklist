@@ -38,3 +38,73 @@ button {
   color: #213d2b;
   background: #c5e1cc;
 }
+
+.calendar-shell .fc {
+  --fc-border-color: #e8ece9;
+  --fc-button-bg-color: #17201c;
+  --fc-button-border-color: #17201c;
+  --fc-button-hover-bg-color: #274932;
+  --fc-button-hover-border-color: #274932;
+  --fc-button-active-bg-color: #357348;
+  --fc-button-active-border-color: #357348;
+  --fc-today-bg-color: rgba(155, 200, 168, 0.13);
+  color: #475569;
+  font-size: 13px;
+}
+
+.calendar-shell .fc .fc-toolbar {
+  gap: 12px;
+}
+
+.calendar-shell .fc .fc-toolbar-title {
+  color: #17201c;
+  font-size: 1.15rem;
+  font-weight: 600;
+}
+
+.calendar-shell .fc .fc-button {
+  border-radius: 10px;
+  box-shadow: none;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 0.55em 0.8em;
+}
+
+.calendar-shell .fc .fc-col-header-cell-cushion,
+.calendar-shell .fc .fc-daygrid-day-number {
+  color: #64748b;
+  text-decoration: none;
+}
+
+.calendar-shell .fc .fc-col-header-cell-cushion {
+  padding: 10px 4px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.calendar-shell .fc .fc-event {
+  border-radius: 6px;
+  cursor: pointer;
+  padding: 1px 3px;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.calendar-shell .calendar-event-completed {
+  opacity: 0.48;
+  text-decoration: line-through;
+}
+
+@media (max-width: 640px) {
+  .calendar-shell .fc .fc-toolbar {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .calendar-shell .fc .fc-toolbar-chunk:nth-child(2) {
+    order: -1;
+    text-align: center;
+  }
+}
