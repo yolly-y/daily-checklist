@@ -2,7 +2,7 @@
 
 Daily is a responsive, browser-private productivity dashboard built with React and TypeScript. It combines daily tasks, an Eisenhower Matrix, calendar planning, long-term goals, productivity history, and custom tags in one application.
 
-The interface is intentionally organized into only three pages: Dashboard, Calendar, and History. Dashboard contains the matrix, goals, and tag management; there is no separate Today tasks panel.
+The interface is organized into five focused pages: Dashboard, Calendar, Goals, Tags, and History. Dashboard contains only the Eisenhower Matrix; there is no separate Today tasks panel.
 
 ## Features
 
@@ -11,8 +11,8 @@ The interface is intentionally organized into only three pages: Dashboard, Calen
 - Eisenhower Matrix as the primary command center
 - Direct task input inside every quadrant
 - Visible importance and urgency axes
-- Goals and tag management in the same page
 - Quick capture in every quadrant plus a detailed task editor
+- Goal and tag creation is centralized in the task Set window
 - Complete, edit, and delete tasks
 
 ### Task model
@@ -39,8 +39,8 @@ Tasks can be one-time or repeat every day, week, or month within a selected star
 
 ### Goals
 
-- Create long-term goals with descriptions and deadlines
-- Pause, activate, complete, or delete goals
+- Display long-term goals with descriptions and deadlines on a dedicated page
+- Create a goal while setting a task, then link that task immediately
 - Link tasks to goals as actionable milestones
 - Automatic task count and completion percentage
 - A persistent manual count of how many times each long-term goal has been completed
@@ -55,9 +55,9 @@ Tasks can be one-time or repeat every day, week, or month within a selected star
 
 ### Tags
 
-- Create, edit, and delete color-coded tags
+- Create color-coded tags while setting a task
 - Assign multiple tags to each task
-- Filter Dashboard tasks by tag
+- Review tag usage on a dedicated display page
 
 ## Technology
 
@@ -76,7 +76,7 @@ FullCalendar is used through its official React, DayGrid, TimeGrid, and Interact
 src/
 ├── components/          Shared navigation, task, progress, and form UI
 ├── hooks/               Productivity state coordination
-├── pages/               Dashboard sections plus Calendar and History pages
+├── pages/               Dashboard, Calendar, Goals, Tags, and History pages
 ├── services/            Storage migration and history snapshot logic
 ├── types/               Task and productivity data contracts
 ├── utils/               Local date helpers

@@ -5,6 +5,8 @@ import {
   CheckIcon,
   HistoryIcon,
   HomeIcon,
+  TagIcon,
+  TargetIcon,
 } from './Icons'
 
 interface NavigationProps {
@@ -17,6 +19,8 @@ type IconComponent = ComponentType<SVGProps<SVGSVGElement>>
 const items: Array<{ id: AppPage; label: string; icon: IconComponent }> = [
   { id: 'dashboard', label: 'Dashboard', icon: HomeIcon },
   { id: 'calendar', label: 'Calendar', icon: CalendarIcon },
+  { id: 'goals', label: 'Goals', icon: TargetIcon },
+  { id: 'tags', label: 'Tags', icon: TagIcon },
   { id: 'history', label: 'History', icon: HistoryIcon },
 ]
 

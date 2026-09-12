@@ -7,13 +7,11 @@ import type { EventClickArg, EventDropArg, EventInput } from '@fullcalendar/core
 import type { Task } from '../types/task'
 import { formatFriendlyDate, getTodayKey, toDateKey } from '../utils/date'
 import { getOccurrencesInRange, isTaskCompletedOnDate, taskOccursOnDate } from '../utils/recurrence'
-import { CalendarIcon, CheckIcon, PlusIcon } from '../components/Icons'
+import { CalendarIcon, CheckIcon } from '../components/Icons'
 
 interface CalendarPageProps {
   tasks: Task[]
-  onCreateAtDate: (date: string) => void
   onMoveDate: (id: string, date: string) => void
-  onEditTask: (task: Task) => void
   onToggleTask: (id: string, occurrenceDate?: string) => void
 }
 
@@ -25,9 +23,7 @@ const priorityColors = {
 
 export function CalendarPage({
   tasks,
-  onCreateAtDate,
   onMoveDate,
-  onEditTask,
   onToggleTask,
 }: CalendarPageProps) {
   const [selectedDate, setSelectedDate] = useState(getTodayKey())
@@ -56,11 +52,7 @@ export function CalendarPage({
   const handleEventClick = (info: EventClickArg) => {
     const taskId = String(info.event.extendedProps.taskId || info.event.id.split('::')[0])
     const occurrenceDate = String(info.event.extendedProps.occurrenceDate || '')
-    const task = tasks.find((item) => item.id === taskId)
-    if (task) {
-      if (occurrenceDate) setSelectedDate(occurrenceDate)
-      onEditTask(task)
-    }
+    if (tasks.some((item) => item.id === taskId) && occurrenceDate) setSelectedDate(occurrenceDate)
   }
 
   const handleEventDrop = (info: EventDropArg) => {
@@ -70,13 +62,12 @@ export function CalendarPage({
 
   return (
     <div>
-      <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+      <div className="mb-6">
         <div>
           <p className="text-sm font-medium text-moss-700">See time clearly</p>
           <h2 className="mt-1 text-3xl font-semibold tracking-tight text-ink">Calendar</h2>
-          <p className="mt-2 text-sm text-slate-500">Click a date to inspect it. Drag a task to reschedule it.</p>
+          <p className="mt-2 text-sm text-slate-500">View scheduled tasks and complete individual occurrences. Create or edit tasks from the Dashboard matrix.</p>
         </div>
-        <button type="button" onClick={() => onCreateAtDate(selectedDate)} className="inline-flex items-center justify-center gap-2 rounded-2xl bg-ink px-4 py-2.5 text-sm font-semibold text-white"><PlusIcon className="h-4 w-4" /> Task on selected day</button>
       </div>
 
       <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_280px]">
@@ -109,12 +100,11 @@ export function CalendarPage({
             {selectedTasks.map((task) => (
               <div key={task.id} className="group flex items-start gap-2 rounded-xl bg-slate-50 px-3 py-2.5">
                 <button type="button" onClick={() => onToggleTask(task.id, selectedDate)} className={`mt-0.5 grid h-5 w-5 shrink-0 place-items-center rounded-md border ${isTaskCompletedOnDate(task, selectedDate) ? 'border-moss-600 bg-moss-600 text-white' : 'border-slate-300 text-transparent'}`} aria-label={`Toggle ${task.title}`}><CheckIcon className="h-3.5 w-3.5" /></button>
-                <button type="button" onClick={() => onEditTask(task)} className={`min-w-0 flex-1 break-words text-left text-xs font-medium leading-5 ${isTaskCompletedOnDate(task, selectedDate) ? 'text-slate-400 line-through' : 'text-slate-600'}`}>{task.title}{task.recurrence !== 'none' && <span className="ml-1 font-normal text-moss-600">· {task.recurrence}</span>}</button>
+                <p className={`min-w-0 flex-1 break-words text-xs font-medium leading-5 ${isTaskCompletedOnDate(task, selectedDate) ? 'text-slate-400 line-through' : 'text-slate-600'}`}>{task.title}{task.recurrence !== 'none' && <span className="ml-1 font-normal text-moss-600">· {task.recurrence}</span>}</p>
               </div>
             ))}
-            {selectedTasks.length === 0 && <p className="py-6 text-center text-xs leading-5 text-slate-400">Nothing planned yet.<br />Click below to add a task.</p>}
+            {selectedTasks.length === 0 && <p className="py-6 text-center text-xs leading-5 text-slate-400">Nothing planned for this date.</p>}
           </div>
-          <button type="button" onClick={() => onCreateAtDate(selectedDate)} className="mt-4 w-full rounded-xl border border-dashed border-moss-300 py-2.5 text-xs font-semibold text-moss-700 hover:bg-moss-50">+ Add task</button>
         </aside>
       </div>
     </div>

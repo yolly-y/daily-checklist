@@ -7,7 +7,7 @@ import { CalendarPage } from './pages/CalendarPage'
 import { GoalsPage } from './pages/GoalsPage'
 import { HistoryPage } from './pages/HistoryPage'
 import { MatrixPage } from './pages/MatrixPage'
-import { SettingsPage } from './pages/SettingsPage'
+import { TagsPage } from './pages/TagsPage'
 import type { AppPage } from './types/productivity'
 import type { Importance, NewTask, Task, Urgency } from './types/task'
 import { getTodayKey } from './utils/date'
@@ -104,30 +104,20 @@ function App() {
   }
 
   const createTag = (name: string, color: string) => {
+    const id = createTaskId()
     setTags((currentTags) => [
       ...currentTags,
-      { id: createTaskId(), name, color, createdDate: new Date().toISOString() },
+      { id, name, color, createdDate: new Date().toISOString() },
     ])
-  }
-
-  const updateTag = (id: string, name: string, color: string) => {
-    setTags((currentTags) =>
-      currentTags.map((tag) => (tag.id === id ? { ...tag, name, color } : tag)),
-    )
-  }
-
-  const deleteTag = (id: string) => {
-    setTags((currentTags) => currentTags.filter((tag) => tag.id !== id))
-    setTasks((currentTasks) =>
-      currentTasks.map((task) => ({ ...task, tags: task.tags.filter((tagId) => tagId !== id) })),
-    )
+    return id
   }
 
   const createGoal = (name: string, description: string, deadline: string | null) => {
+    const id = createTaskId()
     setGoals((currentGoals) => [
       ...currentGoals,
       {
-        id: createTaskId(),
+        id,
         name,
         description,
         deadline,
@@ -136,12 +126,7 @@ function App() {
         completionCount: 0,
       },
     ])
-  }
-
-  const updateGoalStatus = (id: string, status: 'active' | 'paused' | 'completed') => {
-    setGoals((currentGoals) =>
-      currentGoals.map((goal) => (goal.id === id ? { ...goal, status } : goal)),
-    )
+    return id
   }
 
   const deleteGoal = (id: string) => {
@@ -178,7 +163,7 @@ function App() {
   const renderPage = () => {
     if (currentPage === 'dashboard') {
       return (
-        <div className="space-y-16">
+        <div>
           <MatrixPage
             tasks={tasks}
             onAdd={saveTask}
@@ -202,32 +187,6 @@ function App() {
               setTaskModalOpen(true)
             }}
           />
-          <GoalsPage
-            goals={goals}
-            tasks={tasks}
-            onCreate={createGoal}
-            onStatusChange={updateGoalStatus}
-            onCompletionCountChange={changeGoalCompletionCount}
-            onDelete={deleteGoal}
-            onAddTask={(goalId) => {
-              setEditingTask(null)
-              setDefaultGoalId(goalId)
-              setDefaultDueDate(null)
-              setDefaultImportance(null)
-              setDefaultUrgency(null)
-              setTaskModalOpen(true)
-            }}
-            onToggleTask={toggleTask}
-            onEditTask={(task) => {
-              setEditingTask(task)
-              setDefaultGoalId(null)
-              setDefaultDueDate(null)
-              setDefaultImportance(null)
-              setDefaultUrgency(null)
-              setTaskModalOpen(true)
-            }}
-          />
-          <SettingsPage tags={tags} onCreate={createTag} onUpdate={updateTag} onDelete={deleteTag} />
         </div>
       )
     }
@@ -236,23 +195,7 @@ function App() {
       return (
         <CalendarPage
           tasks={tasks}
-          onCreateAtDate={(date) => {
-            setEditingTask(null)
-            setDefaultGoalId(null)
-            setDefaultDueDate(date)
-            setDefaultImportance(null)
-            setDefaultUrgency(null)
-            setTaskModalOpen(true)
-          }}
           onMoveDate={moveTaskDate}
-          onEditTask={(task) => {
-            setEditingTask(task)
-            setDefaultGoalId(null)
-            setDefaultDueDate(null)
-            setDefaultImportance(null)
-            setDefaultUrgency(null)
-            setTaskModalOpen(true)
-          }}
           onToggleTask={toggleTask}
         />
       )
@@ -260,6 +203,22 @@ function App() {
 
     if (currentPage === 'history') {
       return <HistoryPage history={history} />
+    }
+
+    if (currentPage === 'goals') {
+      return (
+        <GoalsPage
+          goals={goals}
+          tasks={tasks}
+          onCompletionCountChange={changeGoalCompletionCount}
+          onDelete={deleteGoal}
+          onToggleTask={toggleTask}
+        />
+      )
+    }
+
+    if (currentPage === 'tags') {
+      return <TagsPage tags={tags} tasks={tasks} />
     }
 
     return (
@@ -307,6 +266,8 @@ function App() {
             setDefaultUrgency(null)
           }}
           onSave={saveTask}
+          onCreateGoal={createGoal}
+          onCreateTag={createTag}
         />
       )}
     </div>
