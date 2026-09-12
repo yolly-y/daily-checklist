@@ -5,6 +5,7 @@ import { CheckIcon, EditIcon, PlusIcon, TrashIcon } from '../components/Icons'
 interface MatrixPageProps {
   tasks: Task[]
   onAdd: (task: NewTask) => void
+  onOpenComposer: (importance: Importance, urgency: Urgency) => void
   onMove: (id: string, importance: Importance, urgency: Urgency) => void
   onToggle: (id: string) => void
   onEdit: (task: Task) => void
@@ -58,7 +59,7 @@ const quadrants: Array<{
   },
 ]
 
-export function MatrixPage({ tasks, onAdd, onMove, onToggle, onEdit, onDelete }: MatrixPageProps) {
+export function MatrixPage({ tasks, onAdd, onOpenComposer, onMove, onToggle, onEdit, onDelete }: MatrixPageProps) {
   const [drafts, setDrafts] = useState<Record<string, string>>({})
 
   const handleDrop = (
@@ -163,6 +164,9 @@ export function MatrixPage({ tasks, onAdd, onMove, onToggle, onEdit, onDelete }:
                   <PlusIcon className="h-3.5 w-3.5" /> Add
                 </button>
               </form>
+              <button type="button" onClick={() => onOpenComposer(quadrant.importance, quadrant.urgency)} className="mb-4 -mt-2 text-xs font-semibold text-moss-700 hover:text-moss-900">
+                Set schedule & details →
+              </button>
 
               <div className="space-y-2">
                 {quadrantTasks.map((task) => (
@@ -185,7 +189,11 @@ export function MatrixPage({ tasks, onAdd, onMove, onToggle, onEdit, onDelete }:
                     </button>
                     <div className="min-w-0 flex-1">
                       <button type="button" onClick={() => onEdit(task)} className="break-words text-left text-sm font-medium text-slate-700 hover:text-moss-700">{task.title}</button>
-                      {task.dueDate && <p className="mt-1 text-[11px] text-slate-400">Due {task.dueDate}</p>}
+                      {task.recurrence !== 'none' ? (
+                        <p className="mt-1 text-[11px] capitalize text-moss-600">{task.recurrence} · {task.recurrenceStart} → {task.recurrenceEnd}</p>
+                      ) : task.dueDate ? (
+                        <p className="mt-1 text-[11px] text-slate-400">Due {task.dueDate}</p>
+                      ) : null}
                     </div>
                     <button type="button" onClick={() => onEdit(task)} className="grid h-7 w-7 shrink-0 place-items-center rounded-lg text-slate-300 opacity-0 transition hover:bg-slate-100 hover:text-moss-700 group-hover:opacity-100 focus:opacity-100" aria-label={`Edit ${task.title}`}><EditIcon className="h-3.5 w-3.5" /></button>
                     <button type="button" onClick={() => onDelete(task.id)} className="grid h-7 w-7 shrink-0 place-items-center rounded-lg text-slate-300 opacity-0 transition hover:bg-rose-50 hover:text-rose-600 group-hover:opacity-100 focus:opacity-100" aria-label={`Delete ${task.title}`}><TrashIcon className="h-3.5 w-3.5" /></button>
@@ -205,4 +213,3 @@ export function MatrixPage({ tasks, onAdd, onMove, onToggle, onEdit, onDelete }:
     </div>
   )
 }
-

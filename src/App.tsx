@@ -4,7 +4,6 @@ import { Navigation } from './components/Navigation'
 import { TaskEditorModal } from './components/TaskEditorModal'
 import { useProductivityStore } from './hooks/useProductivityStore'
 import { CalendarPage } from './pages/CalendarPage'
-import { DashboardPage } from './pages/DashboardPage'
 import { GoalsPage } from './pages/GoalsPage'
 import { HistoryPage } from './pages/HistoryPage'
 import { MatrixPage } from './pages/MatrixPage'
@@ -12,6 +11,7 @@ import { SettingsPage } from './pages/SettingsPage'
 import type { AppPage } from './types/productivity'
 import type { Importance, NewTask, Task, Urgency } from './types/task'
 import { getTodayKey } from './utils/date'
+import { taskOccursOnDate } from './utils/recurrence'
 
 const createTaskId = () => {
   if ('randomUUID' in crypto) return crypto.randomUUID()
@@ -25,6 +25,8 @@ function App() {
   const [editingTask, setEditingTask] = useState<Task | null>(null)
   const [defaultGoalId, setDefaultGoalId] = useState<string | null>(null)
   const [defaultDueDate, setDefaultDueDate] = useState<string | null>(null)
+  const [defaultImportance, setDefaultImportance] = useState<Importance | null>(null)
+  const [defaultUrgency, setDefaultUrgency] = useState<Urgency | null>(null)
   const today = new Date()
 
   const saveTask = (input: NewTask, id?: string) => {
@@ -63,23 +65,37 @@ function App() {
       completedDate: input.status === 'completed' ? getTodayKey() : null,
       taskType: input.taskType || 'daily',
       goalId: input.goalId || null,
+      recurrence: input.recurrence || 'none',
+      recurrenceStart: input.recurrenceStart || null,
+      recurrenceEnd: input.recurrenceEnd || null,
+      completedOccurrences: [],
     }
 
     setTasks((currentTasks) => [newTask, ...currentTasks])
     setTaskModalOpen(false)
   }
 
-  const toggleTask = (id: string) => {
+  const toggleTask = (id: string, occurrenceDate?: string) => {
     setTasks((currentTasks) =>
-      currentTasks.map((task) =>
-        task.id === id
-          ? {
-              ...task,
-              status: task.status === 'completed' ? 'todo' : 'completed',
-              completedDate: task.status === 'completed' ? null : getTodayKey(),
-            }
-          : task,
-      ),
+      currentTasks.map((task) => {
+        if (task.id !== id) return task
+        if (task.recurrence !== 'none') {
+          const todayKey = getTodayKey()
+          const targetDate = occurrenceDate || (taskOccursOnDate(task, todayKey) ? todayKey : task.recurrenceStart || task.dueDate || todayKey)
+          const completed = task.completedOccurrences.includes(targetDate)
+          return {
+            ...task,
+            completedOccurrences: completed
+              ? task.completedOccurrences.filter((date) => date !== targetDate)
+              : [...task.completedOccurrences, targetDate],
+          }
+        }
+        return {
+          ...task,
+          status: task.status === 'completed' ? 'todo' : 'completed',
+          completedDate: task.status === 'completed' ? null : getTodayKey(),
+        }
+      }),
     )
   }
 
@@ -117,6 +133,7 @@ function App() {
         deadline,
         status: 'active',
         createdDate: new Date().toISOString(),
+        completionCount: 0,
       },
     ])
   }
@@ -131,6 +148,16 @@ function App() {
     setGoals((currentGoals) => currentGoals.filter((goal) => goal.id !== id))
     setTasks((currentTasks) =>
       currentTasks.map((task) => (task.goalId === id ? { ...task, goalId: null } : task)),
+    )
+  }
+
+  const changeGoalCompletionCount = (id: string, change: number) => {
+    setGoals((currentGoals) =>
+      currentGoals.map((goal) =>
+        goal.id === id
+          ? { ...goal, completionCount: Math.max(0, goal.completionCount + change) }
+          : goal,
+      ),
     )
   }
 
@@ -155,6 +182,14 @@ function App() {
           <MatrixPage
             tasks={tasks}
             onAdd={saveTask}
+            onOpenComposer={(importance, urgency) => {
+              setEditingTask(null)
+              setDefaultGoalId(null)
+              setDefaultDueDate(null)
+              setDefaultImportance(importance)
+              setDefaultUrgency(urgency)
+              setTaskModalOpen(true)
+            }}
             onMove={moveTaskInMatrix}
             onToggle={toggleTask}
             onDelete={deleteTask}
@@ -162,24 +197,8 @@ function App() {
               setEditingTask(task)
               setDefaultGoalId(null)
               setDefaultDueDate(null)
-              setTaskModalOpen(true)
-            }}
-          />
-          <DashboardPage
-            tasks={tasks}
-            tags={tags}
-            onAdd={saveTask}
-            onOpenComposer={() => {
-              setEditingTask(null)
-              setDefaultGoalId(null)
-              setDefaultDueDate(null)
-              setTaskModalOpen(true)
-            }}
-            onToggle={toggleTask}
-            onDelete={deleteTask}
-            onEdit={(task) => {
-              setEditingTask(task)
-              setDefaultDueDate(null)
+              setDefaultImportance(null)
+              setDefaultUrgency(null)
               setTaskModalOpen(true)
             }}
           />
@@ -188,11 +207,14 @@ function App() {
             tasks={tasks}
             onCreate={createGoal}
             onStatusChange={updateGoalStatus}
+            onCompletionCountChange={changeGoalCompletionCount}
             onDelete={deleteGoal}
             onAddTask={(goalId) => {
               setEditingTask(null)
               setDefaultGoalId(goalId)
               setDefaultDueDate(null)
+              setDefaultImportance(null)
+              setDefaultUrgency(null)
               setTaskModalOpen(true)
             }}
             onToggleTask={toggleTask}
@@ -200,6 +222,8 @@ function App() {
               setEditingTask(task)
               setDefaultGoalId(null)
               setDefaultDueDate(null)
+              setDefaultImportance(null)
+              setDefaultUrgency(null)
               setTaskModalOpen(true)
             }}
           />
@@ -216,6 +240,8 @@ function App() {
             setEditingTask(null)
             setDefaultGoalId(null)
             setDefaultDueDate(date)
+            setDefaultImportance(null)
+            setDefaultUrgency(null)
             setTaskModalOpen(true)
           }}
           onMoveDate={moveTaskDate}
@@ -223,6 +249,8 @@ function App() {
             setEditingTask(task)
             setDefaultGoalId(null)
             setDefaultDueDate(null)
+            setDefaultImportance(null)
+            setDefaultUrgency(null)
             setTaskModalOpen(true)
           }}
           onToggleTask={toggleTask}
@@ -266,6 +294,8 @@ function App() {
           task={editingTask}
           defaultDueDate={defaultDueDate}
           defaultGoalId={defaultGoalId}
+          defaultImportance={defaultImportance}
+          defaultUrgency={defaultUrgency}
           tags={tags}
           goals={goals}
           onClose={() => {
@@ -273,6 +303,8 @@ function App() {
             setEditingTask(null)
             setDefaultGoalId(null)
             setDefaultDueDate(null)
+            setDefaultImportance(null)
+            setDefaultUrgency(null)
           }}
           onSave={saveTask}
         />

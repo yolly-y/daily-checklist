@@ -5,6 +5,7 @@ export interface Goal {
   deadline: string | null
   status: 'active' | 'paused' | 'completed'
   createdDate: string
+  completionCount: number
 }
 
 export interface Tag {

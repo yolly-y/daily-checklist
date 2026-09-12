@@ -53,12 +53,24 @@ function migrateLegacyTask(task: LegacyTask): Task {
     completedDate: completed ? createdDate : null,
     taskType: 'daily',
     goalId: null,
+    recurrence: 'none',
+    recurrenceStart: null,
+    recurrenceEnd: null,
+    completedOccurrences: [],
   }
 }
 
 export function readTasks(): Task[] {
   const existingTasks = readValue<Task[] | null>(storageKeys.tasks, null)
-  if (existingTasks) return existingTasks
+  if (existingTasks) {
+    return existingTasks.map((task) => ({
+      ...task,
+      recurrence: task.recurrence || 'none',
+      recurrenceStart: task.recurrenceStart || null,
+      recurrenceEnd: task.recurrenceEnd || null,
+      completedOccurrences: task.completedOccurrences || [],
+    }))
+  }
 
   const legacyTasks = readValue<LegacyTask[]>(storageKeys.legacyTasks, [])
   const migratedTasks = legacyTasks.map(migrateLegacyTask)
@@ -66,6 +78,10 @@ export function readTasks(): Task[] {
   return migratedTasks
 }
 
-export const readGoals = () => readValue<Goal[]>(storageKeys.goals, [])
+export const readGoals = () =>
+  readValue<Goal[]>(storageKeys.goals, []).map((goal) => ({
+    ...goal,
+    completionCount: Math.max(0, Number(goal.completionCount) || 0),
+  }))
 export const readTags = () => readValue<Tag[]>(storageKeys.tags, [])
 export const readHistory = () => readValue<DailyHistory[]>(storageKeys.history, [])

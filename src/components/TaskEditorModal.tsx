@@ -4,17 +4,20 @@ import type {
   Importance,
   NewTask,
   Priority,
+  RecurrenceFrequency,
   Task,
   TaskStatus,
   TaskType,
   Urgency,
 } from '../types/task'
-import { getTodayKey } from '../utils/date'
+import { getTodayKey, toDateKey } from '../utils/date'
 
 interface TaskEditorModalProps {
   task?: Task | null
   defaultDueDate?: string | null
   defaultGoalId?: string | null
+  defaultImportance?: Importance | null
+  defaultUrgency?: Urgency | null
   tags: Tag[]
   goals: Goal[]
   onClose: () => void
@@ -28,6 +31,8 @@ export function TaskEditorModal({
   task,
   defaultDueDate,
   defaultGoalId,
+  defaultImportance,
+  defaultUrgency,
   tags,
   goals,
   onClose,
@@ -37,10 +42,13 @@ export function TaskEditorModal({
   const [description, setDescription] = useState(task?.description || '')
   const [status, setStatus] = useState<TaskStatus>(task?.status || 'todo')
   const [priority, setPriority] = useState<Priority>(task?.priority || 'medium')
-  const [importance, setImportance] = useState<Importance>(task?.importance || 'high')
-  const [urgency, setUrgency] = useState<Urgency>(task?.urgency || 'low')
+  const [importance, setImportance] = useState<Importance>(task?.importance || defaultImportance || 'high')
+  const [urgency, setUrgency] = useState<Urgency>(task?.urgency || defaultUrgency || 'low')
   const [taskType, setTaskType] = useState<TaskType>(task?.taskType || 'daily')
   const [dueDate, setDueDate] = useState(task?.dueDate || defaultDueDate || getTodayKey())
+  const [recurrence, setRecurrence] = useState<RecurrenceFrequency>(task?.recurrence || 'none')
+  const [recurrenceStart, setRecurrenceStart] = useState(task?.recurrenceStart || task?.dueDate || defaultDueDate || getTodayKey())
+  const [recurrenceEnd, setRecurrenceEnd] = useState(task?.recurrenceEnd || '')
   const [goalId, setGoalId] = useState(task?.goalId || defaultGoalId || '')
   const [selectedTags, setSelectedTags] = useState<string[]>(task?.tags || [])
 
@@ -57,12 +65,27 @@ export function TaskEditorModal({
         importance,
         urgency,
         taskType,
-        dueDate: dueDate || null,
+        dueDate: recurrence === 'none' ? dueDate || null : recurrenceStart,
         goalId: goalId || null,
         tags: selectedTags,
+        recurrence,
+        recurrenceStart: recurrence === 'none' ? null : recurrenceStart,
+        recurrenceEnd: recurrence === 'none' ? null : recurrenceEnd,
       },
       task?.id,
     )
+  }
+
+  const handleRecurrenceChange = (value: RecurrenceFrequency) => {
+    setRecurrence(value)
+    if (value === 'none') return
+    const start = recurrenceStart || dueDate || getTodayKey()
+    setRecurrenceStart(start)
+    if (!recurrenceEnd) {
+      const end = new Date(`${start}T12:00:00`)
+      end.setMonth(end.getMonth() + 1)
+      setRecurrenceEnd(toDateKey(end))
+    }
   }
 
   const toggleTag = (tagId: string) => {
@@ -108,11 +131,43 @@ export function TaskEditorModal({
             <SelectField label="Task type" value={taskType} onChange={(value) => setTaskType(value as TaskType)} options={[['daily', 'Daily'], ['short-term', 'Short-term'], ['long-term', 'Long-term']]} />
             <SelectField label="Importance" value={importance} onChange={(value) => setImportance(value as Importance)} options={[['high', 'Important'], ['low', 'Not important']]} />
             <SelectField label="Urgency" value={urgency} onChange={(value) => setUrgency(value as Urgency)} options={[['high', 'Urgent'], ['low', 'Not urgent']]} />
-            <label className="block">
+            {recurrence === 'none' && <label className="block">
               <span className="mb-1.5 block text-xs font-semibold text-slate-500">Due date</span>
               <input type="date" value={dueDate} onChange={(event) => setDueDate(event.target.value)} className={fieldClass} />
-            </label>
+            </label>}
           </div>
+
+          <section className="rounded-2xl border border-moss-100 bg-moss-50/55 p-4">
+            <div className="grid gap-4 sm:grid-cols-3">
+              <SelectField
+                label="Repeat"
+                value={recurrence}
+                onChange={(value) => handleRecurrenceChange(value as RecurrenceFrequency)}
+                options={[["none", "Does not repeat"], ["daily", "Every day"], ["weekly", "Every week"], ["monthly", "Every month"]]}
+              />
+              {recurrence !== 'none' && (
+                <>
+                  <label className="block">
+                    <span className="mb-1.5 block text-xs font-semibold text-slate-500">Starts on</span>
+                    <input type="date" required value={recurrenceStart} onChange={(event) => { setRecurrenceStart(event.target.value); if (recurrenceEnd && recurrenceEnd < event.target.value) setRecurrenceEnd(event.target.value) }} className={fieldClass} />
+                  </label>
+                  <label className="block">
+                    <span className="mb-1.5 block text-xs font-semibold text-slate-500">Ends on</span>
+                    <input type="date" required min={recurrenceStart} value={recurrenceEnd} onChange={(event) => setRecurrenceEnd(event.target.value)} className={fieldClass} />
+                  </label>
+                </>
+              )}
+            </div>
+            <p className="mt-3 text-xs leading-5 text-moss-700/75">
+              {recurrence === 'none'
+                ? 'Choose a single due date above.'
+                : recurrence === 'weekly'
+                  ? 'The task repeats on the same weekday as the start date.'
+                  : recurrence === 'monthly'
+                    ? 'The task repeats on the same day number each month.'
+                    : 'The task appears on every day in this date range.'}
+            </p>
+          </section>
 
           <label className="block">
             <span className="mb-1.5 block text-xs font-semibold text-slate-500">Linked goal</span>

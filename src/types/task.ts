@@ -2,12 +2,14 @@ export const priorities = ['high', 'medium', 'low'] as const
 export const taskStatuses = ['todo', 'in-progress', 'completed'] as const
 export const taskTypes = ['daily', 'short-term', 'long-term'] as const
 export const binaryLevels = ['high', 'low'] as const
+export const recurrenceFrequencies = ['none', 'daily', 'weekly', 'monthly'] as const
 
 export type Priority = (typeof priorities)[number]
 export type TaskStatus = (typeof taskStatuses)[number]
 export type TaskType = (typeof taskTypes)[number]
 export type Importance = (typeof binaryLevels)[number]
 export type Urgency = (typeof binaryLevels)[number]
+export type RecurrenceFrequency = (typeof recurrenceFrequencies)[number]
 
 export interface Task {
   id: string
@@ -23,6 +25,10 @@ export interface Task {
   completedDate: string | null
   taskType: TaskType
   goalId: string | null
+  recurrence: RecurrenceFrequency
+  recurrenceStart: string | null
+  recurrenceEnd: string | null
+  completedOccurrences: string[]
 }
 
 export type NewTask = Pick<Task, 'title' | 'priority'> &
@@ -37,6 +43,9 @@ export type NewTask = Pick<Task, 'title' | 'priority'> &
       | 'dueDate'
       | 'taskType'
       | 'goalId'
+      | 'recurrence'
+      | 'recurrenceStart'
+      | 'recurrenceEnd'
     >
   >
 

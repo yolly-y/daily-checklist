@@ -9,6 +9,7 @@ interface GoalsPageProps {
   tasks: Task[]
   onCreate: (name: string, description: string, deadline: string | null) => void
   onStatusChange: (id: string, status: Goal['status']) => void
+  onCompletionCountChange: (id: string, change: number) => void
   onDelete: (id: string) => void
   onAddTask: (goalId: string) => void
   onToggleTask: (id: string) => void
@@ -20,6 +21,7 @@ export function GoalsPage({
   tasks,
   onCreate,
   onStatusChange,
+  onCompletionCountChange,
   onDelete,
   onAddTask,
   onToggleTask,
@@ -85,6 +87,17 @@ export function GoalsPage({
               <div className="mt-5">
                 <div className="mb-2 flex items-center justify-between text-xs font-medium text-slate-500"><span>{completedCount}/{goalTasks.length} milestones</span><span>{progress}%</span></div>
                 <div className="h-2 overflow-hidden rounded-full bg-slate-100"><div className="h-full rounded-full bg-moss-500 transition-[width]" style={{ width: `${progress}%` }} /></div>
+              </div>
+
+              <div className="mt-5 flex flex-col gap-3 rounded-2xl border border-moss-100 bg-moss-50/60 p-4 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                  <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-moss-600">Completed</p>
+                  <p className="mt-1 text-2xl font-semibold text-ink">{goal.completionCount} <span className="text-sm font-medium text-slate-500">times</span></p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <button type="button" disabled={goal.completionCount === 0} onClick={() => onCompletionCountChange(goal.id, -1)} className="grid h-10 w-10 place-items-center rounded-xl border border-moss-200 bg-white text-lg font-semibold text-moss-700 disabled:opacity-35" aria-label={`Remove one completion from ${goal.name}`}>−</button>
+                  <button type="button" onClick={() => onCompletionCountChange(goal.id, 1)} className="inline-flex h-10 items-center gap-1.5 rounded-xl bg-moss-700 px-4 text-xs font-semibold text-white hover:bg-moss-800" aria-label={`Record one completion for ${goal.name}`}><PlusIcon className="h-3.5 w-3.5" /> Record completion</button>
+                </div>
               </div>
 
               <div className="mt-5 space-y-1 border-t border-slate-100 pt-4">

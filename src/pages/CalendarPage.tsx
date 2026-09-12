@@ -6,6 +6,7 @@ import interactionPlugin, { type DateClickArg } from '@fullcalendar/interaction'
 import type { EventClickArg, EventDropArg, EventInput } from '@fullcalendar/core'
 import type { Task } from '../types/task'
 import { formatFriendlyDate, getTodayKey, toDateKey } from '../utils/date'
+import { getOccurrencesInRange, isTaskCompletedOnDate, taskOccursOnDate } from '../utils/recurrence'
 import { CalendarIcon, CheckIcon, PlusIcon } from '../components/Icons'
 
 interface CalendarPageProps {
@@ -13,7 +14,7 @@ interface CalendarPageProps {
   onCreateAtDate: (date: string) => void
   onMoveDate: (id: string, date: string) => void
   onEditTask: (task: Task) => void
-  onToggleTask: (id: string) => void
+  onToggleTask: (id: string, occurrenceDate?: string) => void
 }
 
 const priorityColors = {
@@ -30,33 +31,41 @@ export function CalendarPage({
   onToggleTask,
 }: CalendarPageProps) {
   const [selectedDate, setSelectedDate] = useState(getTodayKey())
-  const datedTasks = tasks.filter((task) => task.dueDate)
-  const selectedTasks = tasks.filter((task) => task.dueDate === selectedDate)
-  const events: EventInput[] = datedTasks.map((task) => ({
-    id: task.id,
-    title: task.title,
-    start: task.dueDate || undefined,
-    allDay: true,
-    backgroundColor: priorityColors[task.priority],
-    borderColor: priorityColors[task.priority],
-    textColor: '#ffffff',
-    classNames: task.status === 'completed' ? ['calendar-event-completed'] : [],
-  }))
+  const selectedTasks = tasks.filter((task) => taskOccursOnDate(task, selectedDate))
+
+  const buildEvents = (rangeStart: Date, rangeEnd: Date): EventInput[] =>
+    tasks.flatMap((task) =>
+      getOccurrencesInRange(task, rangeStart, rangeEnd).map((date) => ({
+        id: `${task.id}::${date}`,
+        title: task.title,
+        start: date,
+        allDay: true,
+        editable: task.recurrence === 'none',
+        backgroundColor: priorityColors[task.priority],
+        borderColor: priorityColors[task.priority],
+        textColor: '#ffffff',
+        classNames: isTaskCompletedOnDate(task, date) ? ['calendar-event-completed'] : [],
+        extendedProps: { taskId: task.id, occurrenceDate: date },
+      })),
+    )
 
   const handleDateClick = (info: DateClickArg) => {
     setSelectedDate(info.dateStr.slice(0, 10))
   }
 
   const handleEventClick = (info: EventClickArg) => {
-    const task = tasks.find((item) => item.id === info.event.id)
+    const taskId = String(info.event.extendedProps.taskId || info.event.id.split('::')[0])
+    const occurrenceDate = String(info.event.extendedProps.occurrenceDate || '')
+    const task = tasks.find((item) => item.id === taskId)
     if (task) {
-      if (task.dueDate) setSelectedDate(task.dueDate)
+      if (occurrenceDate) setSelectedDate(occurrenceDate)
       onEditTask(task)
     }
   }
 
   const handleEventDrop = (info: EventDropArg) => {
-    if (info.event.start) onMoveDate(info.event.id, toDateKey(info.event.start))
+    const taskId = String(info.event.extendedProps.taskId || info.event.id.split('::')[0])
+    if (info.event.start) onMoveDate(taskId, toDateKey(info.event.start))
   }
 
   return (
@@ -78,7 +87,7 @@ export function CalendarPage({
             initialDate={selectedDate}
             headerToolbar={{ left: 'prev,next today', center: 'title', right: 'dayGridMonth,timeGridWeek' }}
             buttonText={{ today: 'Today', month: 'Month', week: 'Week' }}
-            events={events}
+            events={(info, successCallback) => successCallback(buildEvents(info.start, info.end))}
             dateClick={handleDateClick}
             eventClick={handleEventClick}
             eventDrop={handleEventDrop}
@@ -99,8 +108,8 @@ export function CalendarPage({
           <div className="mt-4 space-y-2">
             {selectedTasks.map((task) => (
               <div key={task.id} className="group flex items-start gap-2 rounded-xl bg-slate-50 px-3 py-2.5">
-                <button type="button" onClick={() => onToggleTask(task.id)} className={`mt-0.5 grid h-5 w-5 shrink-0 place-items-center rounded-md border ${task.status === 'completed' ? 'border-moss-600 bg-moss-600 text-white' : 'border-slate-300 text-transparent'}`} aria-label={`Toggle ${task.title}`}><CheckIcon className="h-3.5 w-3.5" /></button>
-                <button type="button" onClick={() => onEditTask(task)} className={`min-w-0 flex-1 break-words text-left text-xs font-medium leading-5 ${task.status === 'completed' ? 'text-slate-400 line-through' : 'text-slate-600'}`}>{task.title}</button>
+                <button type="button" onClick={() => onToggleTask(task.id, selectedDate)} className={`mt-0.5 grid h-5 w-5 shrink-0 place-items-center rounded-md border ${isTaskCompletedOnDate(task, selectedDate) ? 'border-moss-600 bg-moss-600 text-white' : 'border-slate-300 text-transparent'}`} aria-label={`Toggle ${task.title}`}><CheckIcon className="h-3.5 w-3.5" /></button>
+                <button type="button" onClick={() => onEditTask(task)} className={`min-w-0 flex-1 break-words text-left text-xs font-medium leading-5 ${isTaskCompletedOnDate(task, selectedDate) ? 'text-slate-400 line-through' : 'text-slate-600'}`}>{task.title}{task.recurrence !== 'none' && <span className="ml-1 font-normal text-moss-600">· {task.recurrence}</span>}</button>
               </div>
             ))}
             {selectedTasks.length === 0 && <p className="py-6 text-center text-xs leading-5 text-slate-400">Nothing planned yet.<br />Click below to add a task.</p>}

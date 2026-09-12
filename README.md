@@ -2,7 +2,7 @@
 
 Daily is a responsive, browser-private productivity dashboard built with React and TypeScript. It combines daily tasks, an Eisenhower Matrix, calendar planning, long-term goals, productivity history, and custom tags in one application.
 
-The interface is intentionally organized into only three pages: Dashboard, Calendar, and History.
+The interface is intentionally organized into only three pages: Dashboard, Calendar, and History. Dashboard contains the matrix, goals, and tag management; there is no separate Today tasks panel.
 
 ## Features
 
@@ -11,16 +11,15 @@ The interface is intentionally organized into only three pages: Dashboard, Calen
 - Eisenhower Matrix as the primary command center
 - Direct task input inside every quadrant
 - Visible importance and urgency axes
-- Goals, today's checklist, progress, and tag management in one page
-- Today's tasks plus overdue work
-- Quick task capture and a detailed task editor
+- Goals and tag management in the same page
+- Quick capture in every quadrant plus a detailed task editor
 - Complete, edit, and delete tasks
-- Live completion progress
-- Filter today's work by custom tags
 
 ### Task model
 
 Every task supports a title, description, status, importance, urgency, priority, multiple tags, creation date, due date, completion date, task type, and an optional linked goal.
+
+Tasks can be one-time or repeat every day, week, or month within a selected start and end date. Recurring occurrences are generated on the calendar and can be completed independently.
 
 ### Eisenhower Matrix
 
@@ -44,6 +43,7 @@ Every task supports a title, description, status, importance, urgency, priority,
 - Pause, activate, complete, or delete goals
 - Link tasks to goals as actionable milestones
 - Automatic task count and completion percentage
+- A persistent manual count of how many times each long-term goal has been completed
 
 ### Productivity history
 
