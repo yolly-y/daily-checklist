@@ -1,11 +1,14 @@
-import type { DragEvent } from 'react'
-import type { Importance, Task, Urgency } from '../types/task'
-import { CheckIcon } from '../components/Icons'
+import { useState, type DragEvent, type FormEvent } from 'react'
+import type { Importance, NewTask, Task, Urgency } from '../types/task'
+import { CheckIcon, EditIcon, PlusIcon, TrashIcon } from '../components/Icons'
 
 interface MatrixPageProps {
   tasks: Task[]
+  onAdd: (task: NewTask) => void
   onMove: (id: string, importance: Importance, urgency: Urgency) => void
   onToggle: (id: string) => void
+  onEdit: (task: Task) => void
+  onDelete: (id: string) => void
 }
 
 const quadrants: Array<{
@@ -55,7 +58,9 @@ const quadrants: Array<{
   },
 ]
 
-export function MatrixPage({ tasks, onMove, onToggle }: MatrixPageProps) {
+export function MatrixPage({ tasks, onAdd, onMove, onToggle, onEdit, onDelete }: MatrixPageProps) {
+  const [drafts, setDrafts] = useState<Record<string, string>>({})
+
   const handleDrop = (
     event: DragEvent<HTMLElement>,
     importance: Importance,
@@ -66,17 +71,47 @@ export function MatrixPage({ tasks, onMove, onToggle }: MatrixPageProps) {
     if (taskId) onMove(taskId, importance, urgency)
   }
 
+  const handleAdd = (event: FormEvent<HTMLFormElement>, quadrant: (typeof quadrants)[number]) => {
+    event.preventDefault()
+    const title = drafts[quadrant.id]?.trim()
+    if (!title) return
+
+    onAdd({
+      title,
+      importance: quadrant.importance,
+      urgency: quadrant.urgency,
+      priority:
+        quadrant.importance === 'high' && quadrant.urgency === 'high'
+          ? 'high'
+          : quadrant.importance === 'low' && quadrant.urgency === 'low'
+            ? 'low'
+            : 'medium',
+      taskType: 'daily',
+    })
+    setDrafts((current) => ({ ...current, [quadrant.id]: '' }))
+  }
+
   return (
     <div>
       <div className="mb-6">
-        <p className="text-sm font-medium text-moss-700">Focus by impact</p>
-        <h2 className="mt-1 text-3xl font-semibold tracking-tight text-ink">Eisenhower Matrix</h2>
+        <p className="text-sm font-medium text-moss-700">Your command center</p>
+        <h2 className="mt-1 text-3xl font-semibold tracking-tight text-ink sm:text-4xl">Dashboard</h2>
         <p className="mt-2 text-sm leading-6 text-slate-500">
-          Drag any task to another quadrant to change its importance and urgency.
+          Capture tasks directly in the right quadrant, then drag them as priorities change.
         </p>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2">
+      <div className="relative rounded-[2rem] border border-slate-200/80 bg-white/55 p-3 pb-12 pt-12 shadow-sm sm:p-5 sm:pb-14 sm:pt-14 md:pl-16">
+        <div className="absolute left-4 top-1/2 hidden -translate-y-1/2 -rotate-90 items-center gap-2 whitespace-nowrap text-[11px] font-bold uppercase tracking-[0.16em] text-slate-400 md:flex">
+          <span>Less important</span><span className="h-px w-10 bg-slate-300" /><span>More important</span><span>→</span>
+        </div>
+        <div className="absolute left-3 right-3 top-4 flex items-center justify-between text-[10px] font-bold uppercase tracking-[0.14em] text-slate-400 sm:left-5 sm:right-5 md:left-16">
+          <span>Important + urgent</span><span>Important + not urgent</span>
+        </div>
+        <div className="pointer-events-none absolute bottom-10 left-8 top-10 hidden w-px bg-slate-300 md:block" />
+        <div className="pointer-events-none absolute bottom-8 left-8 right-8 hidden h-px bg-slate-300 md:block" />
+
+        <div className="grid gap-4 md:grid-cols-2">
         {quadrants.map((quadrant) => {
           const quadrantTasks = tasks.filter(
             (task) =>
@@ -107,6 +142,24 @@ export function MatrixPage({ tasks, onMove, onToggle }: MatrixPageProps) {
                 </span>
               </div>
 
+              <form onSubmit={(event) => handleAdd(event, quadrant)} className="mb-4 flex gap-2">
+                <input
+                  value={drafts[quadrant.id] || ''}
+                  onChange={(event) => setDrafts((current) => ({ ...current, [quadrant.id]: event.target.value }))}
+                  placeholder={`Add to ${quadrant.title.toLowerCase()}…`}
+                  maxLength={160}
+                  aria-label={`Add a task to ${quadrant.title}`}
+                  className="min-w-0 flex-1 rounded-xl border border-slate-200 bg-slate-50/70 px-3 py-2.5 text-sm text-slate-700 outline-none transition placeholder:text-slate-400 focus:border-moss-300 focus:bg-white focus:ring-4 focus:ring-moss-100"
+                />
+                <button
+                  type="submit"
+                  disabled={!drafts[quadrant.id]?.trim()}
+                  className="inline-flex shrink-0 items-center gap-1.5 rounded-xl bg-ink px-3 py-2 text-xs font-semibold text-white transition hover:bg-moss-800 disabled:cursor-not-allowed disabled:opacity-35"
+                >
+                  <PlusIcon className="h-3.5 w-3.5" /> Add
+                </button>
+              </form>
+
               <div className="space-y-2">
                 {quadrantTasks.map((task) => (
                   <article
@@ -126,10 +179,12 @@ export function MatrixPage({ tasks, onMove, onToggle }: MatrixPageProps) {
                     >
                       <CheckIcon className="h-3.5 w-3.5" strokeWidth={2.4} />
                     </button>
-                    <div className="min-w-0">
-                      <p className="break-words text-sm font-medium text-slate-700">{task.title}</p>
+                    <div className="min-w-0 flex-1">
+                      <button type="button" onClick={() => onEdit(task)} className="break-words text-left text-sm font-medium text-slate-700 hover:text-moss-700">{task.title}</button>
                       {task.dueDate && <p className="mt-1 text-[11px] text-slate-400">Due {task.dueDate}</p>}
                     </div>
+                    <button type="button" onClick={() => onEdit(task)} className="grid h-7 w-7 shrink-0 place-items-center rounded-lg text-slate-300 opacity-0 transition hover:bg-slate-100 hover:text-moss-700 group-hover:opacity-100 focus:opacity-100" aria-label={`Edit ${task.title}`}><EditIcon className="h-3.5 w-3.5" /></button>
+                    <button type="button" onClick={() => onDelete(task.id)} className="grid h-7 w-7 shrink-0 place-items-center rounded-lg text-slate-300 opacity-0 transition hover:bg-rose-50 hover:text-rose-600 group-hover:opacity-100 focus:opacity-100" aria-label={`Delete ${task.title}`}><TrashIcon className="h-3.5 w-3.5" /></button>
                   </article>
                 ))}
                 {quadrantTasks.length === 0 && (
@@ -141,6 +196,11 @@ export function MatrixPage({ tasks, onMove, onToggle }: MatrixPageProps) {
             </section>
           )
         })}
+        </div>
+
+        <div className="absolute bottom-3 left-3 right-3 flex items-center justify-center gap-3 text-[11px] font-bold uppercase tracking-[0.16em] text-slate-400 md:left-16">
+          <span>Urgent</span><span>←</span><span className="h-px w-16 bg-slate-300 sm:w-28" /><span>Urgency</span><span className="h-px w-16 bg-slate-300 sm:w-28" /><span>→</span><span>Not urgent</span>
+        </div>
       </div>
     </div>
   )

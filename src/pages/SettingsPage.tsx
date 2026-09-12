@@ -31,7 +31,7 @@ export function SettingsPage({ tags, onCreate, onUpdate, onDelete }: SettingsPag
     <div className="mx-auto max-w-3xl">
       <div className="mb-6">
         <p className="text-sm font-medium text-moss-700">Personalize your system</p>
-        <h2 className="mt-1 text-3xl font-semibold tracking-tight text-ink">Settings</h2>
+        <h2 className="mt-1 text-3xl font-semibold tracking-tight text-ink">Tags & preferences</h2>
         <p className="mt-2 text-sm text-slate-500">Create reusable tags for areas, projects, and contexts.</p>
       </div>
 

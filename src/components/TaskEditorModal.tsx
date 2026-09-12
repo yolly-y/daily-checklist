@@ -139,7 +139,7 @@ export function TaskEditorModal({
                   </button>
                 )
               })}
-              {tags.length === 0 && <span className="px-1 py-1 text-xs text-slate-400">Create tags in Settings first.</span>}
+              {tags.length === 0 && <span className="px-1 py-1 text-xs text-slate-400">Create tags in the Dashboard tags section first.</span>}
             </div>
           </fieldset>
         </div>

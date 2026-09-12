@@ -2,10 +2,16 @@
 
 Daily is a responsive, browser-private productivity dashboard built with React and TypeScript. It combines daily tasks, an Eisenhower Matrix, calendar planning, long-term goals, productivity history, and custom tags in one application.
 
+The interface is intentionally organized into only three pages: Dashboard, Calendar, and History.
+
 ## Features
 
 ### Dashboard
 
+- Eisenhower Matrix as the primary command center
+- Direct task input inside every quadrant
+- Visible importance and urgency axes
+- Goals, today's checklist, progress, and tag management in one page
 - Today's tasks plus overdue work
 - Quick task capture and a detailed task editor
 - Complete, edit, and delete tasks
@@ -70,7 +76,7 @@ FullCalendar is used through its official React, DayGrid, TimeGrid, and Interact
 src/
 ├── components/          Shared navigation, task, progress, and form UI
 ├── hooks/               Productivity state coordination
-├── pages/               Dashboard, Matrix, Calendar, Goals, History, Settings
+├── pages/               Dashboard sections plus Calendar and History pages
 ├── services/            Storage migration and history snapshot logic
 ├── types/               Task and productivity data contracts
 ├── utils/               Local date helpers

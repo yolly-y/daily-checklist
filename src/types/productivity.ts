@@ -28,10 +28,4 @@ export interface DailyHistory {
   productivityScore: number
 }
 
-export type AppPage =
-  | 'dashboard'
-  | 'matrix'
-  | 'calendar'
-  | 'goals'
-  | 'history'
-  | 'settings'
+export type AppPage = 'dashboard' | 'calendar' | 'history'

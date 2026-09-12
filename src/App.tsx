@@ -151,29 +151,61 @@ function App() {
   const renderPage = () => {
     if (currentPage === 'dashboard') {
       return (
-        <DashboardPage
-          tasks={tasks}
-          tags={tags}
-          onAdd={saveTask}
-          onOpenComposer={() => {
-            setEditingTask(null)
-            setDefaultGoalId(null)
-            setDefaultDueDate(null)
-            setTaskModalOpen(true)
-          }}
-          onToggle={toggleTask}
-          onDelete={deleteTask}
-          onEdit={(task) => {
-            setEditingTask(task)
-            setDefaultDueDate(null)
-            setTaskModalOpen(true)
-          }}
-        />
+        <div className="space-y-16">
+          <MatrixPage
+            tasks={tasks}
+            onAdd={saveTask}
+            onMove={moveTaskInMatrix}
+            onToggle={toggleTask}
+            onDelete={deleteTask}
+            onEdit={(task) => {
+              setEditingTask(task)
+              setDefaultGoalId(null)
+              setDefaultDueDate(null)
+              setTaskModalOpen(true)
+            }}
+          />
+          <DashboardPage
+            tasks={tasks}
+            tags={tags}
+            onAdd={saveTask}
+            onOpenComposer={() => {
+              setEditingTask(null)
+              setDefaultGoalId(null)
+              setDefaultDueDate(null)
+              setTaskModalOpen(true)
+            }}
+            onToggle={toggleTask}
+            onDelete={deleteTask}
+            onEdit={(task) => {
+              setEditingTask(task)
+              setDefaultDueDate(null)
+              setTaskModalOpen(true)
+            }}
+          />
+          <GoalsPage
+            goals={goals}
+            tasks={tasks}
+            onCreate={createGoal}
+            onStatusChange={updateGoalStatus}
+            onDelete={deleteGoal}
+            onAddTask={(goalId) => {
+              setEditingTask(null)
+              setDefaultGoalId(goalId)
+              setDefaultDueDate(null)
+              setTaskModalOpen(true)
+            }}
+            onToggleTask={toggleTask}
+            onEditTask={(task) => {
+              setEditingTask(task)
+              setDefaultGoalId(null)
+              setDefaultDueDate(null)
+              setTaskModalOpen(true)
+            }}
+          />
+          <SettingsPage tags={tags} onCreate={createTag} onUpdate={updateTag} onDelete={deleteTag} />
+        </div>
       )
-    }
-
-    if (currentPage === 'matrix') {
-      return <MatrixPage tasks={tasks} onMove={moveTaskInMatrix} onToggle={toggleTask} />
     }
 
     if (currentPage === 'calendar') {
@@ -198,44 +230,8 @@ function App() {
       )
     }
 
-    if (currentPage === 'goals') {
-      return (
-        <GoalsPage
-          goals={goals}
-          tasks={tasks}
-          onCreate={createGoal}
-          onStatusChange={updateGoalStatus}
-          onDelete={deleteGoal}
-          onAddTask={(goalId) => {
-            setEditingTask(null)
-            setDefaultGoalId(goalId)
-            setDefaultDueDate(null)
-            setTaskModalOpen(true)
-          }}
-          onToggleTask={toggleTask}
-          onEditTask={(task) => {
-            setEditingTask(task)
-            setDefaultGoalId(null)
-            setDefaultDueDate(null)
-            setTaskModalOpen(true)
-          }}
-        />
-      )
-    }
-
     if (currentPage === 'history') {
       return <HistoryPage history={history} />
-    }
-
-    if (currentPage === 'settings') {
-      return (
-        <SettingsPage
-          tags={tags}
-          onCreate={createTag}
-          onUpdate={updateTag}
-          onDelete={deleteTag}
-        />
-      )
     }
 
     return (

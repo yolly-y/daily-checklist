@@ -3,11 +3,8 @@ import type { AppPage } from '../types/productivity'
 import {
   CalendarIcon,
   CheckIcon,
-  GridIcon,
   HistoryIcon,
   HomeIcon,
-  TagIcon,
-  TargetIcon,
 } from './Icons'
 
 interface NavigationProps {
@@ -19,11 +16,8 @@ type IconComponent = ComponentType<SVGProps<SVGSVGElement>>
 
 const items: Array<{ id: AppPage; label: string; icon: IconComponent }> = [
   { id: 'dashboard', label: 'Dashboard', icon: HomeIcon },
-  { id: 'matrix', label: 'Matrix', icon: GridIcon },
   { id: 'calendar', label: 'Calendar', icon: CalendarIcon },
-  { id: 'goals', label: 'Goals', icon: TargetIcon },
   { id: 'history', label: 'History', icon: HistoryIcon },
-  { id: 'settings', label: 'Settings', icon: TagIcon },
 ]
 
 export function Navigation({ currentPage, onNavigate }: NavigationProps) {

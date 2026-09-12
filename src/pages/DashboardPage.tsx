@@ -44,7 +44,7 @@ export function DashboardPage({
       <div className="space-y-5">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div>
-            <p className="text-sm font-medium text-moss-700">Make today count</p>
+            <p className="text-sm font-medium text-moss-700">Today & progress</p>
             <h2 className="mt-1 text-3xl font-semibold tracking-[-0.035em] text-ink sm:text-4xl">
               Today’s tasks
             </h2>
