@@ -1,6 +1,8 @@
 import { useState, type DragEvent, type FormEvent } from 'react'
 import type { Importance, NewTask, Task, Urgency } from '../types/task'
 import { CheckIcon, EditIcon, PlusIcon, TrashIcon } from '../components/Icons'
+import { getTodayKey } from '../utils/date'
+import { isTaskCompletedOnDate, taskOccursOnDate } from '../utils/recurrence'
 
 interface MatrixPageProps {
   tasks: Task[]
@@ -92,6 +94,12 @@ export function MatrixPage({ tasks, onAdd, onOpenComposer, onMove, onToggle, onE
     setDrafts((current) => ({ ...current, [quadrant.id]: '' }))
   }
 
+  const getCompletionDate = (task: Task) => {
+    const today = getTodayKey()
+    if (task.recurrence === 'none' || taskOccursOnDate(task, today)) return today
+    return task.recurrenceStart || task.dueDate || today
+  }
+
   return (
     <div>
       <div className="mb-6">
@@ -169,7 +177,10 @@ export function MatrixPage({ tasks, onAdd, onOpenComposer, onMove, onToggle, onE
               </button>
 
               <div className="space-y-2">
-                {quadrantTasks.map((task) => (
+                {quadrantTasks.map((task) => {
+                  const completionDate = getCompletionDate(task)
+                  const completed = isTaskCompletedOnDate(task, completionDate)
+                  return (
                   <article
                     key={task.id}
                     draggable
@@ -177,20 +188,20 @@ export function MatrixPage({ tasks, onAdd, onOpenComposer, onMove, onToggle, onE
                       event.dataTransfer.setData('text/task-id', task.id)
                       event.dataTransfer.effectAllowed = 'move'
                     }}
-                    className="group flex cursor-grab items-start gap-3 rounded-2xl border border-slate-200 bg-white p-3 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md active:cursor-grabbing"
+                    className={`group flex cursor-grab items-start gap-3 rounded-2xl border p-3 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md active:cursor-grabbing ${completed ? 'border-moss-200 bg-moss-50/60' : 'border-slate-200 bg-white'}`}
                   >
                     <button
                       type="button"
                       onClick={() => onToggle(task.id)}
-                      aria-label={`Complete ${task.title}`}
-                      className="mt-0.5 grid h-5 w-5 shrink-0 place-items-center rounded-md border border-slate-300 text-transparent transition hover:border-moss-500 hover:text-moss-500"
+                      aria-label={`${completed ? 'Undo completion of' : 'Complete'} ${task.title}`}
+                      className={`mt-0.5 grid h-5 w-5 shrink-0 place-items-center rounded-md border transition ${completed ? 'border-moss-600 bg-moss-600 text-white' : 'border-slate-300 text-transparent hover:border-moss-500 hover:text-moss-500'}`}
                     >
                       <CheckIcon className="h-3.5 w-3.5" strokeWidth={2.4} />
                     </button>
                     <div className="min-w-0 flex-1">
-                      <button type="button" onClick={() => onEdit(task)} className="break-words text-left text-sm font-medium text-slate-700 hover:text-moss-700">{task.title}</button>
+                      <button type="button" onClick={() => onEdit(task)} className={`break-words text-left text-sm font-medium hover:text-moss-700 ${completed ? 'text-slate-400 line-through' : 'text-slate-700'}`}>{task.title}</button>
                       {task.recurrence !== 'none' ? (
-                        <p className="mt-1 text-[11px] capitalize text-moss-600">{task.recurrence} · {task.recurrenceStart} → {task.recurrenceEnd}</p>
+                        <p className="mt-1 text-[11px] capitalize text-moss-600">{completed ? `Completed ${completionDate} · ` : ''}{task.recurrence} · {task.recurrenceStart} → {task.recurrenceEnd}</p>
                       ) : task.dueDate ? (
                         <p className="mt-1 text-[11px] text-slate-400">Due {task.dueDate}</p>
                       ) : null}
@@ -198,7 +209,8 @@ export function MatrixPage({ tasks, onAdd, onOpenComposer, onMove, onToggle, onE
                     <button type="button" onClick={() => onEdit(task)} className="grid h-7 w-7 shrink-0 place-items-center rounded-lg text-slate-300 opacity-0 transition hover:bg-slate-100 hover:text-moss-700 group-hover:opacity-100 focus:opacity-100" aria-label={`Edit ${task.title}`}><EditIcon className="h-3.5 w-3.5" /></button>
                     <button type="button" onClick={() => onDelete(task.id)} className="grid h-7 w-7 shrink-0 place-items-center rounded-lg text-slate-300 opacity-0 transition hover:bg-rose-50 hover:text-rose-600 group-hover:opacity-100 focus:opacity-100" aria-label={`Delete ${task.title}`}><TrashIcon className="h-3.5 w-3.5" /></button>
                   </article>
-                ))}
+                  )
+                })}
                 {quadrantTasks.length === 0 && (
                   <div className="grid min-h-36 place-items-center rounded-2xl border border-dashed border-slate-200 bg-slate-50/60 p-4 text-center text-xs leading-5 text-slate-400">
                     Drop tasks here
@@ -213,3 +225,4 @@ export function MatrixPage({ tasks, onAdd, onOpenComposer, onMove, onToggle, onE
     </div>
   )
 }
+
