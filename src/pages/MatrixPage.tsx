@@ -21,15 +21,6 @@ const quadrants: Array<{
   color: string
 }> = [
   {
-    id: 'q1',
-    label: 'Q1',
-    title: 'Do now',
-    hint: 'Important · Urgent',
-    importance: 'high',
-    urgency: 'high',
-    color: 'border-rose-200 bg-rose-50/50 text-rose-700',
-  },
-  {
     id: 'q2',
     label: 'Q2',
     title: 'Plan',
@@ -39,13 +30,13 @@ const quadrants: Array<{
     color: 'border-moss-200 bg-moss-50/70 text-moss-700',
   },
   {
-    id: 'q3',
-    label: 'Q3',
-    title: 'Delegate',
-    hint: 'Not important · Urgent',
-    importance: 'low',
+    id: 'q1',
+    label: 'Q1',
+    title: 'Do now',
+    hint: 'Important · Urgent',
+    importance: 'high',
     urgency: 'high',
-    color: 'border-amber-200 bg-amber-50/60 text-amber-700',
+    color: 'border-rose-200 bg-rose-50/50 text-rose-700',
   },
   {
     id: 'q4',
@@ -55,6 +46,15 @@ const quadrants: Array<{
     importance: 'low',
     urgency: 'low',
     color: 'border-slate-200 bg-slate-50 text-slate-600',
+  },
+  {
+    id: 'q3',
+    label: 'Q3',
+    title: 'Delegate',
+    hint: 'Not important · Urgent',
+    importance: 'low',
+    urgency: 'high',
+    color: 'border-amber-200 bg-amber-50/60 text-amber-700',
   },
 ]
 
@@ -101,17 +101,21 @@ export function MatrixPage({ tasks, onAdd, onMove, onToggle, onEdit, onDelete }:
         </p>
       </div>
 
-      <div className="relative rounded-[2rem] border border-slate-200/80 bg-white/55 p-3 pb-12 pt-12 shadow-sm sm:p-5 sm:pb-14 sm:pt-14 md:pl-16">
-        <div className="absolute left-4 top-1/2 hidden -translate-y-1/2 -rotate-90 items-center gap-2 whitespace-nowrap text-[11px] font-bold uppercase tracking-[0.16em] text-slate-400 md:flex">
-          <span>Less important</span><span className="h-px w-10 bg-slate-300" /><span>More important</span><span>→</span>
+      <div className="relative rounded-[2rem] border border-slate-200/80 bg-white/55 p-3 shadow-sm sm:p-5">
+        <div className="mb-3 flex items-center justify-center gap-5 rounded-2xl bg-slate-50 px-4 py-3 text-[10px] font-bold uppercase tracking-[0.14em] text-slate-500 md:hidden">
+          <span>↑ Importance</span><span className="h-4 w-px bg-slate-300" /><span>Urgency →</span>
         </div>
-        <div className="absolute left-3 right-3 top-4 flex items-center justify-between text-[10px] font-bold uppercase tracking-[0.14em] text-slate-400 sm:left-5 sm:right-5 md:left-16">
-          <span>Important + urgent</span><span>Important + not urgent</span>
-        </div>
-        <div className="pointer-events-none absolute bottom-10 left-8 top-10 hidden w-px bg-slate-300 md:block" />
-        <div className="pointer-events-none absolute bottom-8 left-8 right-8 hidden h-px bg-slate-300 md:block" />
 
-        <div className="grid gap-4 md:grid-cols-2">
+        <div className="pointer-events-none absolute left-1/2 top-3 z-10 hidden -translate-x-1/2 text-lg font-semibold text-moss-700 md:block">↑</div>
+        <div className="pointer-events-none absolute bottom-1/2 left-1/2 top-8 z-10 hidden w-px -translate-x-1/2 bg-slate-400 md:block" />
+        <div className="pointer-events-none absolute left-1/2 top-1/4 z-10 hidden -translate-x-1/2 -translate-y-1/2 -rotate-90 whitespace-nowrap rounded-full bg-[#f7f8f6] px-3 py-1 text-[10px] font-bold uppercase tracking-[0.16em] text-moss-700 md:block">Importance</div>
+
+        <div className="pointer-events-none absolute left-1/2 right-8 top-1/2 z-10 hidden h-px -translate-y-1/2 bg-slate-400 md:block" />
+        <div className="pointer-events-none absolute right-3 top-1/2 z-10 hidden -translate-y-1/2 text-lg font-semibold text-moss-700 md:block">→</div>
+        <div className="pointer-events-none absolute left-3/4 top-1/2 z-10 hidden -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#f7f8f6] px-3 py-1 text-[10px] font-bold uppercase tracking-[0.16em] text-moss-700 md:block">Urgency</div>
+        <div className="pointer-events-none absolute left-1/2 top-1/2 z-20 hidden h-3 w-3 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-white bg-moss-700 shadow-sm md:block" aria-hidden="true" />
+
+        <div className="grid gap-4 md:grid-cols-2 md:grid-rows-2 md:gap-x-10 md:gap-y-10">
         {quadrants.map((quadrant) => {
           const quadrantTasks = tasks.filter(
             (task) =>
@@ -197,11 +201,8 @@ export function MatrixPage({ tasks, onAdd, onMove, onToggle, onEdit, onDelete }:
           )
         })}
         </div>
-
-        <div className="absolute bottom-3 left-3 right-3 flex items-center justify-center gap-3 text-[11px] font-bold uppercase tracking-[0.16em] text-slate-400 md:left-16">
-          <span>Urgent</span><span>←</span><span className="h-px w-16 bg-slate-300 sm:w-28" /><span>Urgency</span><span className="h-px w-16 bg-slate-300 sm:w-28" /><span>→</span><span>Not urgent</span>
-        </div>
       </div>
     </div>
   )
 }
+
